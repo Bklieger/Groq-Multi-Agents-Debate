@@ -45,7 +45,7 @@ class DebatePlayer(Agent):
 
 class Debate:
     def __init__(self,
-            model_name: str='gpt-3.5-turbo', 
+            model_name: str='llama3-8b-8192', 
             temperature: float=0, 
             num_players: int=3, 
             config: dict=None,
@@ -55,7 +55,7 @@ class Debate:
         """Create a debate
 
         Args:
-            model_name (str): openai model name
+            model_name (str): model name
             temperature (float): higher values make the output more random, while lower values make it more focused and deterministic
             num_players (int): num of players
             max_round (int): maximum Rounds of Debate

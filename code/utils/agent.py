@@ -1,6 +1,5 @@
-from openai import OpenAI
-
-client = OpenAI()
+from groq import Groq
+client = Groq()
 
 import backoff
 import time
@@ -9,7 +8,7 @@ from openai import RateLimitError, APIError, APIConnectionError
 from .openai_utils import OutOfQuotaException, AccessTerminatedException
 from .openai_utils import num_tokens_from_string, model2max_context
 
-support_models = ['gpt-3.5-turbo', 'gpt-3.5-turbo-0301', 'gpt-4', 'gpt-4-0314']
+support_models = ['llama3-8b-8192', 'llama3-70b-8192']
 
 class Agent:
     def __init__(self, model_name: str, name: str, temperature: float, sleep_time: float=0) -> None:
@@ -28,12 +27,11 @@ class Agent:
         self.sleep_time = sleep_time
 
     @backoff.on_exception(backoff.expo, (RateLimitError, APIError, APIConnectionError), max_tries=20)
-    def query(self, messages: "list[dict]", max_tokens: int, temperature: float) -> str:
+    def query(self, messages: "list[dict]", temperature: float) -> str:
         """make a query
 
         Args:
             messages (list[dict]): chat history in turbo format
-            max_tokens (int): max token in api call
             temperature (float): sampling temperature
 
         Raises:
@@ -49,8 +47,7 @@ class Agent:
             if self.model_name in support_models:
                 response = client.chat.completions.create(model=self.model_name,
                 messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens)
+                temperature=temperature)
                 gen = response.choices[0].message.content
             return gen
 
@@ -92,8 +89,5 @@ class Agent:
 
         Args:
         """
-        # query
-        num_context_token = sum([num_tokens_from_string(m["content"], self.model_name) for m in self.memory_lst])
-        max_token = model2max_context[self.model_name] - num_context_token
-        return self.query(self.memory_lst, max_token, temperature=temperature if temperature else self.temperature)
+        return self.query(self.memory_lst, temperature=temperature if temperature else self.temperature)
 

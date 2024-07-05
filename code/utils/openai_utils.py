@@ -8,6 +8,8 @@ model2max_context = {
     "gpt-3.5-turbo": 3900,
     "text-davinci-003": 4096,
     "text-davinci-002": 4096,
+    "llama3-8b-8192": 8192,
+    "llama3-70b-8192": 8192,
 }
 
 class OutOfQuotaException(Exception):

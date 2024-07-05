@@ -4,3 +4,4 @@ tqdm
 langcodes
 backoff
 language_data
+groq
