@@ -1,8 +1,11 @@
-import openai
+from openai import OpenAI
+
+client = OpenAI()
+
 import backoff
 import time
 import random
-from openai.error import RateLimitError, APIError, ServiceUnavailableError, APIConnectionError
+from openai import RateLimitError, APIError, APIConnectionError
 from .openai_utils import OutOfQuotaException, AccessTerminatedException
 from .openai_utils import num_tokens_from_string, model2max_context
 
@@ -24,7 +27,7 @@ class Agent:
         self.memory_lst = []
         self.sleep_time = sleep_time
 
-    @backoff.on_exception(backoff.expo, (RateLimitError, APIError, ServiceUnavailableError, APIConnectionError), max_tries=20)
+    @backoff.on_exception(backoff.expo, (RateLimitError, APIError, APIConnectionError), max_tries=20)
     def query(self, messages: "list[dict]", max_tokens: int, api_key: str, temperature: float) -> str:
         """make a query
 
@@ -45,14 +48,11 @@ class Agent:
         assert self.model_name in support_models, f"Not support {self.model_name}. Choices: {support_models}"
         try:
             if self.model_name in support_models:
-                response = openai.ChatCompletion.create(
-                    model=self.model_name,
-                    messages=messages,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                    api_key=api_key,
-                )
-                gen = response['choices'][0]['message']['content']
+                response = client.chat.completions.create(model=self.model_name,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens)
+                gen = response.choices[0].message.content
             return gen
 
         except RateLimitError as e:
