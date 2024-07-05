@@ -28,13 +28,12 @@ class Agent:
         self.sleep_time = sleep_time
 
     @backoff.on_exception(backoff.expo, (RateLimitError, APIError, APIConnectionError), max_tries=20)
-    def query(self, messages: "list[dict]", max_tokens: int, api_key: str, temperature: float) -> str:
+    def query(self, messages: "list[dict]", max_tokens: int, temperature: float) -> str:
         """make a query
 
         Args:
             messages (list[dict]): chat history in turbo format
             max_tokens (int): max token in api call
-            api_key (str): openai api key
             temperature (float): sampling temperature
 
         Raises:
@@ -57,9 +56,9 @@ class Agent:
 
         except RateLimitError as e:
             if "You exceeded your current quota, please check your plan and billing details" in e.user_message:
-                raise OutOfQuotaException(api_key)
+                raise OutOfQuotaException()
             elif "Your access was terminated due to violation of our policies" in e.user_message:
-                raise AccessTerminatedException(api_key)
+                raise AccessTerminatedException()
             else:
                 raise e
 
@@ -96,5 +95,5 @@ class Agent:
         # query
         num_context_token = sum([num_tokens_from_string(m["content"], self.model_name) for m in self.memory_lst])
         max_token = model2max_context[self.model_name] - num_context_token
-        return self.query(self.memory_lst, max_token, api_key=self.openai_api_key, temperature=temperature if temperature else self.temperature)
+        return self.query(self.memory_lst, max_token, temperature=temperature if temperature else self.temperature)
 

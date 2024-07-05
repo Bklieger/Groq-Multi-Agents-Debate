@@ -22,9 +22,8 @@ import json
 import random
 # random.seed(0)
 from code.utils.agent import Agent
-
-
-openai_api_key = "Your-OpenAI-Api-Key"
+import tkinter as tk
+from tkinter import ttk, scrolledtext
 
 NAME_LIST=[
     "Affirmative side",
@@ -33,26 +32,22 @@ NAME_LIST=[
 ]
 
 class DebatePlayer(Agent):
-    def __init__(self, model_name: str, name: str, temperature:float, openai_api_key: str, sleep_time: float) -> None:
+    def __init__(self, model_name: str, name: str, temperature:float, sleep_time: float) -> None:
         """Create a player in the debate
 
         Args:
             model_name(str): model name
             name (str): name of this player
             temperature (float): higher values make the output more random, while lower values make it more focused and deterministic
-            openai_api_key (str): As the parameter name suggests
             sleep_time (float): sleep because of rate limits
         """
         super(DebatePlayer, self).__init__(model_name, name, temperature, sleep_time)
-        self.openai_api_key = openai_api_key
-
 
 class Debate:
     def __init__(self,
             model_name: str='gpt-3.5-turbo', 
             temperature: float=0, 
             num_players: int=3, 
-            openai_api_key: str=None,
             config: dict=None,
             max_round: int=3,
             sleep_time: float=0
@@ -63,7 +58,6 @@ class Debate:
             model_name (str): openai model name
             temperature (float): higher values make the output more random, while lower values make it more focused and deterministic
             num_players (int): num of players
-            openai_api_key (str): As the parameter name suggests
             max_round (int): maximum Rounds of Debate
             sleep_time (float): sleep because of rate limits
         """
@@ -71,7 +65,6 @@ class Debate:
         self.model_name = model_name
         self.temperature = temperature
         self.num_players = num_players
-        self.openai_api_key = openai_api_key
         self.config = config
         self.max_round = max_round
         self.sleep_time = sleep_time
@@ -94,7 +87,7 @@ class Debate:
     def creat_agents(self):
         # creates players
         self.players = [
-            DebatePlayer(model_name=self.model_name, name=name, temperature=self.temperature, openai_api_key=self.openai_api_key, sleep_time=self.sleep_time) for name in NAME_LIST
+            DebatePlayer(model_name=self.model_name, name=name, temperature=self.temperature, sleep_time=self.sleep_time) for name in NAME_LIST
         ]
         self.affirmative = self.players[0]
         self.negative = self.players[1]
@@ -197,7 +190,7 @@ class Debate:
 
         # ultimate deadly technique.
         else:
-            judge_player = DebatePlayer(model_name=self.model_name, name='Judge', temperature=self.temperature, openai_api_key=self.openai_api_key, sleep_time=self.sleep_time)
+            judge_player = DebatePlayer(model_name=self.model_name, name='Judge', temperature=self.temperature, sleep_time=self.sleep_time)
             aff_ans = self.affirmative.memory_lst[2]['content']
             neg_ans = self.negative.memory_lst[2]['content']
 
@@ -222,7 +215,6 @@ class Debate:
 
         self.print_answer()
 
-
 if __name__ == "__main__":
 
     current_script_path = os.path.abspath(__file__)
@@ -236,6 +228,6 @@ if __name__ == "__main__":
         config = json.load(open(f"{MAD_path}/code/utils/config4all.json", "r"))
         config['debate_topic'] = debate_topic
 
-        debate = Debate(num_players=3, openai_api_key=openai_api_key, config=config, temperature=0, sleep_time=0)
+        debate = Debate(num_players=3, config=config, temperature=0, sleep_time=0)
         debate.run()
 
